@@ -19,91 +19,42 @@ const DATA = {
   ]}
 };
 
-// 다국어 텍스트
 const LANG = {
   ko: {
-    subtitle: "Roman Shade",
-    title: "로만쉐이드 제작 사이즈 계산기",
-    desc: "가로·세로 사이즈를 입력하면 각 단별 제작 사이즈와 실패 개수를 자동 산출합니다",
-    widthLabel: "가로 사이즈",
-    heightLabel: "세로 사이즈 (120~260cm)",
-    widthPh: "예: 150",
-    heightPh: "예: 137",
-    calcBtn: "계산하기",
-    resetBtn: "초기화",
-    errWidth: "가로 사이즈를 올바르게 입력해주세요.",
-    errHeight: "세로 사이즈는 120~260cm 범위로 입력해주세요.",
-    errRange: "계산할 수 없는 범위입니다.",
-    width: "가로",
-    height: "세로",
-    kan: "칸",
-    danSum: "단 합계",
-    interpolated: "보간 계산값",
-    failLabel: "실패 개수 (비고)",
-    failUnit: "개",
-    failRule1: "~130cm 기준",
-    failRule2: "131~200cm 기준",
-    sectionTitle: "단면도",
-    tableBtn: "전체 사이즈 테이블 (120~260cm, 1cm 단위)",
-    baseData: "기준 데이터",
-    interpData: "보간 계산값",
-    methodTitle: "계산 방식",
-    method1: "5cm 단위 기준 데이터 사이의 값은",
-    method1b: "선형 보간법",
-    method1c: "으로 산출",
-    method2: "모든 결과는",
-    method2b: "0.5cm 단위",
-    method2c: "로 반올림",
-    method3: "~150cm → 4칸 / 151~220cm → 5칸 / 221cm~ → 6칸",
-    method4: "실패 개수: 가로 ~130cm → 2개 / 가로 131~200cm → 3개",
-    footer: "마리하우스 로만쉐이드 제작 기준표",
-    danBottom: "하단",
-    danTop: "상단",
-    dan: "단",
-    thHeight: "세로",
-    thKan: "칸",
+    subtitle:"Roman Shade", title:"로만쉐이드 제작 사이즈 계산기",
+    desc:"가로·세로 사이즈를 입력하면 각 단별 제작 사이즈와 실패 개수를 자동 산출합니다",
+    widthLabel:"가로 사이즈", heightLabel:"세로 사이즈 (120~260cm)",
+    widthPh:"예: 150", heightPh:"예: 137", calcBtn:"계산하기", resetBtn:"초기화",
+    errWidth:"가로 사이즈를 올바르게 입력해주세요.", errHeight:"세로 사이즈는 120~260cm 범위로 입력해주세요.", errRange:"계산할 수 없는 범위입니다.",
+    width:"가로", height:"세로", kan:"칸", danSum:"단 합계", interpolated:"보간 계산값",
+    failLabel:"실패 개수 (비고)", failUnit:"개", failRule1:"~130cm 기준", failRule2:"131~200cm 기준",
+    sectionTitle:"단면도",
+    tableBtn:"전체 사이즈 테이블 (120~260cm, 1cm 단위)", baseData:"기준 데이터", interpData:"보간 계산값",
+    methodTitle:"계산 방식",
+    method1:"5cm 단위 기준 데이터 사이의 값은", method1b:"선형 보간법", method1c:"으로 산출",
+    method2:"모든 결과는", method2b:"0.5cm 단위", method2c:"로 반올림",
+    method3:"~150cm → 4칸 / 151~220cm → 5칸 / 221cm~ → 6칸",
+    method4:"실패 개수: 가로 ~130cm → 2개 / 가로 131~200cm → 3개",
+    footer:"마리하우스 로만쉐이드 제작 기준표",
+    danBottom:"하단", danTop:"상단", dan:"단", thHeight:"세로", thKan:"칸",
   },
   zh: {
-    subtitle: "Roman Shade",
-    title: "罗马帘制作尺寸计算器",
-    desc: "输入宽度和高度，自动计算各段制作尺寸和失败数量",
-    widthLabel: "宽度",
-    heightLabel: "高度 (120~260cm)",
-    widthPh: "例: 150",
-    heightPh: "例: 137",
-    calcBtn: "计算",
-    resetBtn: "重置",
-    errWidth: "请正确输入宽度。",
-    errHeight: "高度请输入120~260cm范围。",
-    errRange: "超出可计算范围。",
-    width: "宽",
-    height: "高",
-    kan: "格",
-    danSum: "段合计",
-    interpolated: "插值计算",
-    failLabel: "失败数量 (备注)",
-    failUnit: "个",
-    failRule1: "~130cm 标准",
-    failRule2: "131~200cm 标准",
-    sectionTitle: "截面图",
-    tableBtn: "全部尺寸表 (120~260cm, 1cm单位)",
-    baseData: "基准数据",
-    interpData: "插值数据",
-    methodTitle: "计算方式",
-    method1: "5cm单位基准数据之间的值通过",
-    method1b: "线性插值法",
-    method1c: "计算",
-    method2: "所有结果以",
-    method2b: "0.5cm单位",
-    method2c: "四舍五入",
-    method3: "~150cm → 4格 / 151~220cm → 5格 / 221cm~ → 6格",
-    method4: "失败数量: 宽 ~130cm → 2个 / 宽 131~200cm → 3个",
-    footer: "MARYHOUSE 罗马帘制作标准表",
-    danBottom: "底",
-    danTop: "顶",
-    dan: "段",
-    thHeight: "高度",
-    thKan: "格",
+    subtitle:"Roman Shade", title:"罗马帘制作尺寸计算器",
+    desc:"输入宽度和高度，自动计算各段制作尺寸和穿绳数量",
+    widthLabel:"宽度", heightLabel:"高度 (120~260cm)",
+    widthPh:"例: 150", heightPh:"例: 137", calcBtn:"计算", resetBtn:"重置",
+    errWidth:"请正确输入宽度。", errHeight:"高度请输入120~260cm范围。", errRange:"超出可计算范围。",
+    width:"宽", height:"高", kan:"格", danSum:"段合计", interpolated:"插值计算",
+    failLabel:"穿绳数量 (备注)", failUnit:"个", failRule1:"~130cm 标准", failRule2:"131~200cm 标准",
+    sectionTitle:"截面图",
+    tableBtn:"全部尺寸表 (120~260cm, 1cm单位)", baseData:"基准数据", interpData:"插值数据",
+    methodTitle:"计算方式",
+    method1:"5cm单位基准数据之间的值通过", method1b:"线性插值法", method1c:"计算",
+    method2:"所有结果以", method2b:"0.5cm单位", method2c:"四舍五入",
+    method3:"~150cm → 4格 / 151~220cm → 5格 / 221cm~ → 6格",
+    method4:"穿绳数量: 宽 ~130cm → 2个 / 宽 131~200cm → 3个",
+    footer:"MARYHOUSE 罗马帘制作标准表",
+    danBottom:"底", danTop:"顶", dan:"段", thHeight:"高度", thKan:"格",
   }
 };
 
@@ -155,10 +106,19 @@ function getDanNames(kansu, t) {
   return names;
 }
 
-const C = { bg:"#f8f7f4",card:"#ffffff",primary:"#2c3e50",accent:"#c0956c",accentLight:"#f0e6d8",border:"#e8e2d8",text:"#333",textLight:"#888",warn:"#c4883a",error:"#b91c1c",errorBg:"#fef2f2",errorBorder:"#fecaca",danColors:["#d4a574","#c0956c","#a67c52","#8c6239","#724d2b","#5a3a1e"] };
+const C = { bg:"#f8f7f4",card:"#ffffff",primary:"#2c3e50",accent:"#c0956c",accentLight:"#f0e6d8",border:"#e8e2d8",text:"#333",textLight:"#888",warn:"#c4883a",error:"#b91c1c",errorBg:"#fef2f2",errorBorder:"#fecaca" };
 
-// 단면도 색상 (상단=밝은색, 하단=어두운색)
-const sectionColors = ["#e8d5c0","#dfc8ad","#d4b896","#c9a87e","#b89068","#a67c52"];
+// 단면도 색상: 상단→하단으로 뚜렷하게 구분되는 색상 팔레트
+const SECTION_COLORS_MAP = {
+  4: ["#A7C7E7","#F6D186","#E8A87C","#D4856B"],
+  5: ["#A7C7E7","#B5D8A8","#F6D186","#E8A87C","#D4856B"],
+  6: ["#A7C7E7","#B5D8A8","#F6D186","#F0B67F","#E8A87C","#D4856B"],
+};
+const SECTION_TEXT_MAP = {
+  4: ["#2b5278","#6b5a1e","#6b3a22","#5a2a1a"],
+  5: ["#2b5278","#2d5a2e","#6b5a1e","#6b3a22","#5a2a1a"],
+  6: ["#2b5278","#2d5a2e","#6b5a1e","#5a3a1e","#6b3a22","#5a2a1a"],
+};
 
 export default function RomanShadeCalculator() {
   const [width, setWidth] = useState("");
@@ -226,6 +186,8 @@ export default function RomanShadeCalculator() {
         {/* 결과 */}
         {result && !result.error && (()=>{
           const danNames = getDanNames(result.kansu, t);
+          const colors = SECTION_COLORS_MAP[result.kansu] || SECTION_COLORS_MAP[6];
+          const textColors = SECTION_TEXT_MAP[result.kansu] || SECTION_TEXT_MAP[6];
           return (
           <div style={{ background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"hidden",marginBottom:20 }}>
             {/* 결과 헤더 */}
@@ -244,56 +206,41 @@ export default function RomanShadeCalculator() {
               </div>
             </div>
 
-            {/* 단별 바 차트 */}
-            <div style={{ padding:20 }}>
-              {danNames.map((name,i)=>{
-                const val=result.values[i],maxVal=Math.max(...result.values),pct=(val/maxVal)*100;
-                return (<div key={i} style={{ marginBottom:i<result.values.length-1?12:0 }}>
-                  <div style={{ display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:5 }}>
-                    <span style={{ fontSize:13,fontWeight:600,color:C.primary,minWidth:72 }}>{name}</span>
-                    <span style={{ fontSize:18,fontWeight:700,color:C.danColors[i]||C.accent }}>{val}<span style={{ fontSize:12,fontWeight:500 }}>cm</span></span>
-                  </div>
-                  <div style={{ height:8,background:C.bg,borderRadius:4,overflow:"hidden" }}><div style={{ height:"100%",width:`${pct}%`,background:C.danColors[i]||C.accent,borderRadius:4,transition:"width 0.4s ease-out" }}/></div>
-                </div>);
-              })}
-            </div>
-
             {/* 실패 개수 */}
-            <div style={{ margin:"0 20px 20px",padding:"14px 16px",background:"#fef9ee",border:"1px solid #f0d68a",borderRadius:8 }}>
+            <div style={{ margin:"20px 20px 0",padding:"14px 16px",background:"#fef9ee",border:"1px solid #f0d68a",borderRadius:8 }}>
               <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
                 <div><div style={{ fontSize:12,color:C.textLight,marginBottom:4 }}>{t.failLabel}</div><div style={{ fontSize:20,fontWeight:700,color:C.primary }}>{result.failureCount}{t.failUnit}</div></div>
                 <div style={{ textAlign:"right",fontSize:12,color:C.textLight,lineHeight:1.6 }}>{t.width} {result.width}cm → {result.width<=130?`${t.failRule1} (2${t.failUnit})`:`${t.failRule2} (3${t.failUnit})`}</div>
               </div>
             </div>
 
-            {/* 단면도: 상단→하단 면적형 */}
-            <div style={{ padding:"0 20px 20px" }}>
-              <div style={{ fontSize:13,fontWeight:600,color:C.primary,marginBottom:8 }}>{t.sectionTitle}</div>
-              <div style={{ border:`1.5px solid ${C.border}`,borderRadius:10,overflow:"hidden" }}>
+            {/* 단면도: 상단→하단 면적형, 다채로운 색상 */}
+            <div style={{ padding:"20px" }}>
+              <div style={{ fontSize:13,fontWeight:600,color:C.primary,marginBottom:10 }}>{t.sectionTitle}</div>
+              <div style={{ border:`2px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
                 {danNames.slice().reverse().map((name,ri)=>{
                   const i = result.values.length - 1 - ri;
                   const val = result.values[i];
                   const hPct = (val / totalSum) * 100;
-                  const bgColor = sectionColors[ri % sectionColors.length];
+                  const bgColor = colors[ri % colors.length];
+                  const txtColor = textColors[ri % textColors.length];
                   return (
                     <div key={i} style={{
-                      height: `${Math.max(hPct * 3.5, 36)}px`,
+                      height: `${Math.max(hPct * 3.8, 40)}px`,
                       background: bgColor,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      padding: "0 16px",
-                      borderBottom: ri < result.values.length - 1 ? "1px solid rgba(255,255,255,0.5)" : "none",
-                      transition: "height 0.3s ease-out",
+                      padding: "0 18px",
+                      borderBottom: ri < result.values.length - 1 ? "2px solid rgba(255,255,255,0.7)" : "none",
                     }}>
-                      <span style={{ fontSize:13,fontWeight:600,color:"#5a3a1e" }}>{name}</span>
-                      <span style={{ fontSize:16,fontWeight:700,color:"#3d2410" }}>{val}<span style={{ fontSize:11,fontWeight:500 }}>cm</span></span>
+                      <span style={{ fontSize:14,fontWeight:700,color:txtColor }}>{name}</span>
+                      <span style={{ fontSize:18,fontWeight:800,color:txtColor }}>{val}<span style={{ fontSize:12,fontWeight:500 }}>cm</span></span>
                     </div>
                   );
                 })}
               </div>
-              {/* 총 높이 표시 */}
-              <div style={{ display:"flex",justifyContent:"flex-end",marginTop:6,fontSize:12,color:C.textLight }}>
+              <div style={{ display:"flex",justifyContent:"flex-end",marginTop:8,fontSize:12,color:C.textLight }}>
                 {t.danSum}: {roundHalf(totalSum)}cm
               </div>
             </div>
