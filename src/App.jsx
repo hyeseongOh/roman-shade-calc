@@ -62,6 +62,39 @@ function roundHalf(n){return Math.round(n*2)/2;}
 function getKansu(h){if(h<120)return null;if(h<=150)return 4;if(h<=220)return 5;if(h>=221)return 6;return null;}
 function getFailureCount(w){if(w<=130)return 2;if(w<=200)return 3;return 3;}
 
+// 최대잔여법: 반올림 후 합계가 목표와 다르면 오차가 큰 값부터 0.5씩 보정
+function adjustToTarget(rawValues, targetSum) {
+  const rounded = rawValues.map(v => roundHalf(v));
+  let currentSum = rounded.reduce((a, b) => a + b, 0);
+  let diff = Math.round((targetSum - currentSum) * 2) / 2; // 0.5 단위 차이
+
+  if (diff === 0) return rounded;
+
+  // 각 값의 반올림 잔여량 계산 (원래값 - 반올림값)
+  const remainders = rawValues.map((raw, i) => ({
+    index: i,
+    remainder: raw - rounded[i], // 양수면 내림됨, 음수면 올림됨
+  }));
+
+  if (diff > 0) {
+    // 합이 부족 → 내림된 정도가 큰 순서대로 0.5씩 올림
+    remainders.sort((a, b) => b.remainder - a.remainder);
+    for (let j = 0; diff > 0 && j < remainders.length; j++) {
+      rounded[remainders[j].index] += 0.5;
+      diff -= 0.5;
+    }
+  } else {
+    // 합이 초과 → 올림된 정도가 큰 순서대로 0.5씩 내림
+    remainders.sort((a, b) => a.remainder - b.remainder);
+    for (let j = 0; diff < 0 && j < remainders.length; j++) {
+      rounded[remainders[j].index] -= 0.5;
+      diff += 0.5;
+    }
+  }
+
+  return rounded;
+}
+
 function interpolate(height){
   const kansu=getKansu(height);if(!kansu)return null;
   const data=DATA[kansu];if(!data)return null;const points=data.points;
@@ -72,7 +105,10 @@ function interpolate(height){
   if(!lower||!upper){if(height>points[points.length-1].size){lower=points[points.length-2];upper=points[points.length-1];}else if(height<points[0].size){lower=points[0];upper=points[1];}}
   if(!lower||!upper)return null;
   const ratio=(height-lower.size)/(upper.size-lower.size);
-  return{kansu,values:lower.values.map((v,i)=>roundHalf(v+(upper.values[i]-v)*ratio)),isExact:false};
+  const rawValues=lower.values.map((v,i)=>v+(upper.values[i]-v)*ratio);
+  // 합계가 목표 높이와 일치하도록 최대잔여법 보정 적용
+  const values = adjustToTarget(rawValues, height);
+  return{kansu,values,isExact:false};
 }
 
 function getDanNames(kansu,t){const n=[];for(let i=1;i<=kansu;i++){if(i===1)n.push(`${t.danBottom} 1${t.dan}`);else if(i===kansu)n.push(`${t.danTop} ${i}${t.dan}`);else n.push(`${i}${t.dan}`);}return n;}
@@ -85,91 +121,48 @@ const FABRIC_COLORS_MAP={
   6:["#e4d6c4","#d8c6b0","#ccb69c","#c0a688","#b49674","#a88662"],
 };
 
-// 실패 개수에 따른 끈 위치 (% 기준)
-function getCordPositions(cordCount) {
-  if (cordCount === 2) return [30, 70];
-  if (cordCount === 3) return [22, 50, 78];
-  return [30, 70]; // fallback
+function getCordPositions(cordCount){
+  if(cordCount===2)return[30,70];
+  if(cordCount===3)return[22,50,78];
+  return[30,70];
 }
 
-function RomanShadeDiagram({ danNames, values, totalSum, cordCount }) {
-  const kansu = values.length;
-  const fabricColors = FABRIC_COLORS_MAP[kansu] || FABRIC_COLORS_MAP[6];
-  const reversed = danNames.slice().reverse();
-  const cordPositions = getCordPositions(cordCount);
+function RomanShadeDiagram({danNames,values,totalSum,cordCount}){
+  const kansu=values.length;
+  const fabricColors=FABRIC_COLORS_MAP[kansu]||FABRIC_COLORS_MAP[6];
+  const reversed=danNames.slice().reverse();
+  const cordPositions=getCordPositions(cordCount);
 
-  return (
-    <div style={{ position:"relative",padding:"0 30px" }}>
-      {/* 헤드레일 */}
-      <div style={{
-        background:"linear-gradient(180deg, #6b6b6b 0%, #4a4a4a 40%, #3a3a3a 100%)",
-        height:18, borderRadius:"4px 4px 0 0",
-        boxShadow:"0 3px 6px rgba(0,0,0,0.25)",
-        position:"relative", zIndex:10,
-      }}>
-        <div style={{ position:"absolute",left:8,top:4,right:8,height:3,background:"rgba(255,255,255,0.15)",borderRadius:2 }}/>
-        <div style={{ position:"absolute",left:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"1px 0 3px rgba(0,0,0,0.2)" }}/>
-        <div style={{ position:"absolute",right:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"-1px 0 3px rgba(0,0,0,0.2)" }}/>
+  return(
+    <div style={{position:"relative",padding:"0 30px"}}>
+      <div style={{background:"linear-gradient(180deg, #6b6b6b 0%, #4a4a4a 40%, #3a3a3a 100%)",height:18,borderRadius:"4px 4px 0 0",boxShadow:"0 3px 6px rgba(0,0,0,0.25)",position:"relative",zIndex:10}}>
+        <div style={{position:"absolute",left:8,top:4,right:8,height:3,background:"rgba(255,255,255,0.15)",borderRadius:2}}/>
+        <div style={{position:"absolute",left:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"1px 0 3px rgba(0,0,0,0.2)"}}/>
+        <div style={{position:"absolute",right:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"-1px 0 3px rgba(0,0,0,0.2)"}}/>
       </div>
-
-      {/* 원단 패널 */}
-      <div style={{ position:"relative",border:"1px solid #c8b8a4",borderTop:"none",borderRadius:"0 0 3px 3px",overflow:"hidden" }}>
-        {/* 끈 라인: cordCount에 따라 동적 생성 */}
-        {cordPositions.map((pos, ci) => (
-          <div key={`cord-${ci}`} style={{
-            position:"absolute", left:`${pos}%`, top:0, bottom:0,
-            width:1, background:"rgba(0,0,0,0.1)", zIndex:5,
-          }}/>
-        ))}
-
-        {reversed.map((name, ri) => {
-          const i = values.length - 1 - ri;
-          const val = values[i];
-          const hPct = (val / totalSum) * 100;
-          const h = Math.max(hPct * 3.8, 44);
-          const color = fabricColors[ri % fabricColors.length];
-          const isLast = ri === values.length - 1;
-
-          return (
-            <div key={i} style={{ position:"relative", height:`${h}px` }}>
-              <div style={{ position:"absolute",inset:0, background:`linear-gradient(180deg, ${color} 0%, ${color} 70%, ${adjustColor(color,-15)} 100%)` }}/>
-              <div style={{ position:"absolute",inset:0, background:"repeating-linear-gradient(90deg, transparent 0px, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)" }}/>
-
-              {!isLast && (
-                <div style={{ position:"absolute",bottom:0,left:0,right:0,height:12, background:"linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.15) 100%)", zIndex:2 }}/>
-              )}
-              {ri > 0 && (
-                <div style={{ position:"absolute",top:0,left:0,right:0,height:4, background:"linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%)", zIndex:2 }}/>
-              )}
-
-              <div style={{ position:"relative",zIndex:3, height:"100%",display:"flex",alignItems:"center",justifyContent:"space-between", padding:"0 28px" }}>
-                <span style={{ fontSize:13,fontWeight:600,color:"rgba(60,40,20,0.85)",textShadow:"0 1px 0 rgba(255,255,255,0.3)" }}>{name}</span>
-                <span style={{ fontSize:17,fontWeight:800,color:"rgba(60,40,20,0.9)",textShadow:"0 1px 0 rgba(255,255,255,0.3)" }}>
-                  {val}<span style={{ fontSize:11,fontWeight:500 }}>cm</span>
-                </span>
-              </div>
-
-              {/* 끈 매듭 점: cordCount에 따라 동적 생성 */}
-              {!isLast && cordPositions.map((pos, ci) => (
-                <div key={`knot-${ri}-${ci}`} style={{
-                  position:"absolute", bottom:-3,
-                  left:`calc(${pos}% - 3px)`,
-                  width:7, height:7, borderRadius:"50%",
-                  background:"#b0a090", border:"1px solid #998070", zIndex:6,
-                }}/>
-              ))}
+      <div style={{position:"relative",border:"1px solid #c8b8a4",borderTop:"none",borderRadius:"0 0 3px 3px",overflow:"hidden"}}>
+        {cordPositions.map((pos,ci)=>(<div key={`cord-${ci}`} style={{position:"absolute",left:`${pos}%`,top:0,bottom:0,width:1,background:"rgba(0,0,0,0.1)",zIndex:5}}/>))}
+        {reversed.map((name,ri)=>{
+          const i=values.length-1-ri;const val=values[i];const hPct=(val/totalSum)*100;
+          const h=Math.max(hPct*3.8,44);const color=fabricColors[ri%fabricColors.length];const isLast=ri===values.length-1;
+          return(<div key={i} style={{position:"relative",height:`${h}px`}}>
+            <div style={{position:"absolute",inset:0,background:`linear-gradient(180deg, ${color} 0%, ${color} 70%, ${adjustColor(color,-15)} 100%)`}}/>
+            <div style={{position:"absolute",inset:0,background:"repeating-linear-gradient(90deg, transparent 0px, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)"}}/>
+            {!isLast&&(<div style={{position:"absolute",bottom:0,left:0,right:0,height:12,background:"linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.15) 100%)",zIndex:2}}/>)}
+            {ri>0&&(<div style={{position:"absolute",top:0,left:0,right:0,height:4,background:"linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%)",zIndex:2}}/>)}
+            <div style={{position:"relative",zIndex:3,height:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 28px"}}>
+              <span style={{fontSize:13,fontWeight:600,color:"rgba(60,40,20,0.85)",textShadow:"0 1px 0 rgba(255,255,255,0.3)"}}>{name}</span>
+              <span style={{fontSize:17,fontWeight:800,color:"rgba(60,40,20,0.9)",textShadow:"0 1px 0 rgba(255,255,255,0.3)"}}>{val}<span style={{fontSize:11,fontWeight:500}}>cm</span></span>
             </div>
-          );
+            {!isLast&&cordPositions.map((pos,ci)=>(<div key={`knot-${ri}-${ci}`} style={{position:"absolute",bottom:-3,left:`calc(${pos}% - 3px)`,width:7,height:7,borderRadius:"50%",background:"#b0a090",border:"1px solid #998070",zIndex:6}}/>))}
+          </div>);
         })}
-
-        <div style={{ height:6, background:"linear-gradient(180deg, #8a7a6a 0%, #6a5a4a 100%)", boxShadow:"0 2px 4px rgba(0,0,0,0.15)" }}/>
+        <div style={{height:6,background:"linear-gradient(180deg, #8a7a6a 0%, #6a5a4a 100%)",boxShadow:"0 2px 4px rgba(0,0,0,0.15)"}}/>
       </div>
-
-      {/* 총 높이 우측 */}
-      <div style={{ position:"absolute",right:-28,top:18,bottom:6, display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center" }}>
-        <div style={{ width:1,flex:1,background:"#bbb" }}/>
-        <div style={{ padding:"4px 0",fontSize:10,color:C.textLight,fontWeight:600,writingMode:"vertical-rl",letterSpacing:1 }}>{roundHalf(totalSum)}cm</div>
-        <div style={{ width:1,flex:1,background:"#bbb" }}/>
+      <div style={{position:"absolute",right:-28,top:18,bottom:6,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{width:1,flex:1,background:"#bbb"}}/>
+        <div style={{padding:"4px 0",fontSize:10,color:C.textLight,fontWeight:600,writingMode:"vertical-rl",letterSpacing:1}}>{roundHalf(totalSum)}cm</div>
+        <div style={{width:1,flex:1,background:"#bbb"}}/>
       </div>
     </div>
   );
@@ -266,7 +259,7 @@ export default function RomanShadeCalculator(){
 
             <div style={{padding:"20px 20px 24px"}}>
               <div style={{fontSize:13,fontWeight:600,color:C.primary,marginBottom:14}}>{t.sectionTitle}</div>
-              <RomanShadeDiagram danNames={danNames} values={result.values} totalSum={totalSum} cordCount={result.failureCount} />
+              <RomanShadeDiagram danNames={danNames} values={result.values} totalSum={totalSum} cordCount={result.failureCount}/>
             </div>
           </div>
           );
