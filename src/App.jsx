@@ -59,66 +59,152 @@ const LANG = {
 };
 
 function roundHalf(n) { return Math.round(n * 2) / 2; }
-
-function getKansu(height) {
-  if (height < 120) return null;
-  if (height <= 150) return 4;
-  if (height <= 220) return 5;
-  if (height >= 221) return 6;
-  return null;
-}
-
-function getFailureCount(width) {
-  if (width <= 130) return 2;
-  if (width <= 200) return 3;
-  return 3;
-}
+function getKansu(h) { if(h<120)return null;if(h<=150)return 4;if(h<=220)return 5;if(h>=221)return 6;return null; }
+function getFailureCount(w) { if(w<=130)return 2;if(w<=200)return 3;return 3; }
 
 function interpolate(height) {
-  const kansu = getKansu(height);
-  if (!kansu) return null;
-  const data = DATA[kansu];
-  if (!data) return null;
-  const points = data.points;
-  const exact = points.find((p) => p.size === height);
-  if (exact) return { kansu, values: exact.values, isExact: true };
-  let lower = null, upper = null;
-  for (let i = 0; i < points.length - 1; i++) {
-    if (height >= points[i].size && height <= points[i + 1].size) { lower = points[i]; upper = points[i + 1]; break; }
-  }
-  if (!lower || !upper) {
-    if (height > points[points.length - 1].size) { lower = points[points.length - 2]; upper = points[points.length - 1]; }
-    else if (height < points[0].size) { lower = points[0]; upper = points[1]; }
-  }
-  if (!lower || !upper) return null;
-  const ratio = (height - lower.size) / (upper.size - lower.size);
-  const values = lower.values.map((v, i) => roundHalf(v + (upper.values[i] - v) * ratio));
-  return { kansu, values, isExact: false };
+  const kansu=getKansu(height);if(!kansu)return null;
+  const data=DATA[kansu];if(!data)return null;const points=data.points;
+  const exact=points.find(p=>p.size===height);
+  if(exact)return{kansu,values:exact.values,isExact:true};
+  let lower=null,upper=null;
+  for(let i=0;i<points.length-1;i++){if(height>=points[i].size&&height<=points[i+1].size){lower=points[i];upper=points[i+1];break;}}
+  if(!lower||!upper){if(height>points[points.length-1].size){lower=points[points.length-2];upper=points[points.length-1];}else if(height<points[0].size){lower=points[0];upper=points[1];}}
+  if(!lower||!upper)return null;
+  const ratio=(height-lower.size)/(upper.size-lower.size);
+  return{kansu,values:lower.values.map((v,i)=>roundHalf(v+(upper.values[i]-v)*ratio)),isExact:false};
 }
 
-function getDanNames(kansu, t) {
-  const names = [];
-  for (let i = 1; i <= kansu; i++) {
-    if (i === 1) names.push(`${t.danBottom} 1${t.dan}`);
-    else if (i === kansu) names.push(`${t.danTop} ${i}${t.dan}`);
-    else names.push(`${i}${t.dan}`);
-  }
-  return names;
+function getDanNames(kansu,t){const n=[];for(let i=1;i<=kansu;i++){if(i===1)n.push(`${t.danBottom} 1${t.dan}`);else if(i===kansu)n.push(`${t.danTop} ${i}${t.dan}`);else n.push(`${i}${t.dan}`);}return n;}
+
+const C={bg:"#f8f7f4",card:"#ffffff",primary:"#2c3e50",accent:"#c0956c",accentLight:"#f0e6d8",border:"#e8e2d8",text:"#333",textLight:"#888",warn:"#c4883a",error:"#b91c1c",errorBg:"#fef2f2",errorBorder:"#fecaca"};
+
+const FABRIC_COLORS_MAP = {
+  4:["#dcc8b0","#c9b49c","#b8a08a","#a68c78"],
+  5:["#e0d0bc","#d2bea8","#c4ac94","#b69a82","#a88870"],
+  6:["#e4d6c4","#d8c6b0","#ccb69c","#c0a688","#b49674","#a88662"],
+};
+
+// 로만쉐이드 단면도 컴포넌트
+function RomanShadeDiagram({ danNames, values, totalSum, t }) {
+  const kansu = values.length;
+  const fabricColors = FABRIC_COLORS_MAP[kansu] || FABRIC_COLORS_MAP[6];
+  // 상단→하단 순서: reverse (상단=마지막 단, 하단=1단)
+  const reversed = danNames.slice().reverse();
+
+  return (
+    <div style={{ position:"relative",padding:"0 30px" }}>
+      {/* 헤드레일 */}
+      <div style={{
+        background:"linear-gradient(180deg, #6b6b6b 0%, #4a4a4a 40%, #3a3a3a 100%)",
+        height:18, borderRadius:"4px 4px 0 0",
+        boxShadow:"0 3px 6px rgba(0,0,0,0.25)",
+        position:"relative", zIndex:10,
+      }}>
+        <div style={{ position:"absolute",left:8,top:4,right:8,height:3,background:"rgba(255,255,255,0.15)",borderRadius:2 }}/>
+        {/* 브라켓 */}
+        <div style={{ position:"absolute",left:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"1px 0 3px rgba(0,0,0,0.2)" }}/>
+        <div style={{ position:"absolute",right:-8,top:-4,width:6,height:26,background:"#555",borderRadius:2,boxShadow:"-1px 0 3px rgba(0,0,0,0.2)" }}/>
+      </div>
+
+      {/* 원단 패널들 */}
+      <div style={{ position:"relative",border:"1px solid #c8b8a4",borderTop:"none",borderRadius:"0 0 3px 3px",overflow:"hidden" }}>
+        {/* 좌우 끈 */}
+        <div style={{ position:"absolute",left:20,top:0,bottom:0,width:1,background:"rgba(0,0,0,0.08)",zIndex:5 }}/>
+        <div style={{ position:"absolute",right:20,top:0,bottom:0,width:1,background:"rgba(0,0,0,0.08)",zIndex:5 }}/>
+
+        {reversed.map((name, ri) => {
+          const i = values.length - 1 - ri;
+          const val = values[i];
+          const hPct = (val / totalSum) * 100;
+          const h = Math.max(hPct * 3.8, 44);
+          const color = fabricColors[ri % fabricColors.length];
+          const isLast = ri === values.length - 1; // 하단 1단
+
+          return (
+            <div key={i} style={{ position:"relative", height:`${h}px` }}>
+              {/* 원단 본체 */}
+              <div style={{
+                position:"absolute", inset:0,
+                background: `linear-gradient(180deg, ${color} 0%, ${color} 70%, ${adjustColor(color,-15)} 100%)`,
+              }}/>
+
+              {/* 원단 주름 텍스처 */}
+              <div style={{
+                position:"absolute", inset:0,
+                background: "repeating-linear-gradient(90deg, transparent 0px, transparent 18px, rgba(255,255,255,0.06) 18px, rgba(255,255,255,0.06) 19px)",
+              }}/>
+
+              {/* 단 접힘 그림자 (하단 제외) */}
+              {!isLast && (
+                <div style={{
+                  position:"absolute", bottom:0, left:0, right:0, height:12,
+                  background:"linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.08) 60%, rgba(0,0,0,0.15) 100%)",
+                  zIndex:2,
+                }}/>
+              )}
+
+              {/* 단 접힘 하이라이트 */}
+              {ri > 0 && (
+                <div style={{
+                  position:"absolute", top:0, left:0, right:0, height:4,
+                  background:"linear-gradient(180deg, rgba(255,255,255,0.25) 0%, transparent 100%)",
+                  zIndex:2,
+                }}/>
+              )}
+
+              {/* 텍스트 */}
+              <div style={{
+                position:"relative", zIndex:3,
+                height:"100%", display:"flex", alignItems:"center", justifyContent:"space-between",
+                padding:"0 28px",
+              }}>
+                <span style={{ fontSize:13, fontWeight:600, color:"rgba(60,40,20,0.85)", textShadow:"0 1px 0 rgba(255,255,255,0.3)" }}>{name}</span>
+                <span style={{ fontSize:17, fontWeight:800, color:"rgba(60,40,20,0.9)", textShadow:"0 1px 0 rgba(255,255,255,0.3)" }}>
+                  {val}<span style={{ fontSize:11,fontWeight:500 }}>cm</span>
+                </span>
+              </div>
+
+              {/* 좌우 끈 매듭 점 (단 경계) */}
+              {!isLast && <>
+                <div style={{ position:"absolute",bottom:-3,left:17,width:7,height:7,borderRadius:"50%",background:"#b0a090",border:"1px solid #998070",zIndex:6 }}/>
+                <div style={{ position:"absolute",bottom:-3,right:17,width:7,height:7,borderRadius:"50%",background:"#b0a090",border:"1px solid #998070",zIndex:6 }}/>
+              </>}
+            </div>
+          );
+        })}
+
+        {/* 하단 웨이트바 */}
+        <div style={{
+          height:6,
+          background:"linear-gradient(180deg, #8a7a6a 0%, #6a5a4a 100%)",
+          boxShadow:"0 2px 4px rgba(0,0,0,0.15)",
+        }}/>
+      </div>
+
+      {/* 총 높이 우측 표기 */}
+      <div style={{
+        position:"absolute", right:-28, top:18, bottom:6,
+        display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+      }}>
+        <div style={{ width:1,flex:1,background:"#bbb" }}/>
+        <div style={{ padding:"4px 0",fontSize:10,color:C.textLight,fontWeight:600,writingMode:"vertical-rl",letterSpacing:1 }}>
+          {roundHalf(totalSum)}cm
+        </div>
+        <div style={{ width:1,flex:1,background:"#bbb" }}/>
+      </div>
+    </div>
+  );
 }
 
-const C = { bg:"#f8f7f4",card:"#ffffff",primary:"#2c3e50",accent:"#c0956c",accentLight:"#f0e6d8",border:"#e8e2d8",text:"#333",textLight:"#888",warn:"#c4883a",error:"#b91c1c",errorBg:"#fef2f2",errorBorder:"#fecaca" };
-
-// 단면도 색상: 상단→하단으로 뚜렷하게 구분되는 색상 팔레트
-const SECTION_COLORS_MAP = {
-  4: ["#A7C7E7","#F6D186","#E8A87C","#D4856B"],
-  5: ["#A7C7E7","#B5D8A8","#F6D186","#E8A87C","#D4856B"],
-  6: ["#A7C7E7","#B5D8A8","#F6D186","#F0B67F","#E8A87C","#D4856B"],
-};
-const SECTION_TEXT_MAP = {
-  4: ["#2b5278","#6b5a1e","#6b3a22","#5a2a1a"],
-  5: ["#2b5278","#2d5a2e","#6b5a1e","#6b3a22","#5a2a1a"],
-  6: ["#2b5278","#2d5a2e","#6b5a1e","#5a3a1e","#6b3a22","#5a2a1a"],
-};
+// 색상 밝기 조절 유틸
+function adjustColor(hex, amt) {
+  let c = hex.replace("#","");
+  let r = Math.max(0,Math.min(255,parseInt(c.substring(0,2),16)+amt));
+  let g = Math.max(0,Math.min(255,parseInt(c.substring(2,4),16)+amt));
+  let b = Math.max(0,Math.min(255,parseInt(c.substring(4,6),16)+amt));
+  return `#${r.toString(16).padStart(2,"0")}${g.toString(16).padStart(2,"0")}${b.toString(16).padStart(2,"0")}`;
+}
 
 export default function RomanShadeCalculator() {
   const [width, setWidth] = useState("");
@@ -130,150 +216,118 @@ export default function RomanShadeCalculator() {
   const canCalc = width !== "" && height !== "";
 
   const handleCalc = () => {
-    const w = parseFloat(width), h = parseFloat(height);
-    if (isNaN(w) || w <= 0) { setResult({ error: t.errWidth }); return; }
-    if (isNaN(h) || h < 120 || h > 260) { setResult({ error: t.errHeight }); return; }
-    const res = interpolate(h);
-    if (!res) { setResult({ error: t.errRange }); return; }
-    setResult({ ...res, height: h, width: w, failureCount: getFailureCount(w) });
+    const w=parseFloat(width),h=parseFloat(height);
+    if(isNaN(w)||w<=0){setResult({error:t.errWidth});return;}
+    if(isNaN(h)||h<120||h>260){setResult({error:t.errHeight});return;}
+    const res=interpolate(h);
+    if(!res){setResult({error:t.errRange});return;}
+    setResult({...res,height:h,width:w,failureCount:getFailureCount(w)});
   };
-  const handleKey = (e) => { if (e.key === "Enter" && canCalc) handleCalc(); };
-  const handleReset = () => { setWidth(""); setHeight(""); setResult(null); };
+  const handleKey=(e)=>{if(e.key==="Enter"&&canCalc)handleCalc();};
+  const handleReset=()=>{setWidth("");setHeight("");setResult(null);};
 
-  const fullTable = useMemo(() => {
-    const rows = [];
-    for (let s = 120; s <= 260; s++) { const res = interpolate(s); if (res) rows.push({ size: s, ...res }); }
-    return rows;
-  }, []);
-  const totalSum = result && !result.error ? result.values.reduce((a, b) => a + b, 0) : 0;
+  const fullTable=useMemo(()=>{const rows=[];for(let s=120;s<=260;s++){const res=interpolate(s);if(res)rows.push({size:s,...res});}return rows;},[]);
+  const totalSum=result&&!result.error?result.values.reduce((a,b)=>a+b,0):0;
 
   return (
-    <div style={{ minHeight:"100vh",background:C.bg,fontFamily:"'Pretendard',-apple-system,sans-serif",color:C.text,padding:"24px 16px" }}>
-      <div style={{ maxWidth:560,margin:"0 auto" }}>
+    <div style={{minHeight:"100vh",background:C.bg,fontFamily:"'Pretendard',-apple-system,sans-serif",color:C.text,padding:"24px 16px"}}>
+      <div style={{maxWidth:560,margin:"0 auto"}}>
 
         {/* 언어 토글 */}
-        <div style={{ display:"flex",justifyContent:"flex-end",marginBottom:16,gap:6 }}>
-          <button onClick={()=>setLang("ko")} style={{ display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,border:lang==="ko"?`2px solid ${C.accent}`:`1px solid ${C.border}`,background:lang==="ko"?C.accentLight:C.card,cursor:"pointer",fontSize:13,fontWeight:lang==="ko"?600:400,color:C.primary }}>
-            <span style={{ fontSize:16 }}>🇰🇷</span> 한국어
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16,gap:6}}>
+          <button onClick={()=>setLang("ko")} style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,border:lang==="ko"?`2px solid ${C.accent}`:`1px solid ${C.border}`,background:lang==="ko"?C.accentLight:C.card,cursor:"pointer",fontSize:13,fontWeight:lang==="ko"?600:400,color:C.primary}}>
+            <span style={{fontSize:16}}>🇰🇷</span> 한국어
           </button>
-          <button onClick={()=>setLang("zh")} style={{ display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,border:lang==="zh"?`2px solid ${C.accent}`:`1px solid ${C.border}`,background:lang==="zh"?C.accentLight:C.card,cursor:"pointer",fontSize:13,fontWeight:lang==="zh"?600:400,color:C.primary }}>
-            <span style={{ fontSize:16 }}>🇨🇳</span> 中文
+          <button onClick={()=>setLang("zh")} style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",borderRadius:20,border:lang==="zh"?`2px solid ${C.accent}`:`1px solid ${C.border}`,background:lang==="zh"?C.accentLight:C.card,cursor:"pointer",fontSize:13,fontWeight:lang==="zh"?600:400,color:C.primary}}>
+            <span style={{fontSize:16}}>🇨🇳</span> 中文
           </button>
         </div>
 
         {/* 헤더 */}
-        <div style={{ textAlign:"center",marginBottom:32 }}>
-          <div style={{ fontSize:13,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600 }}>{t.subtitle}</div>
-          <h1 style={{ fontSize:22,fontWeight:700,color:C.primary,margin:0,lineHeight:1.4 }}>{t.title}</h1>
-          <p style={{ fontSize:13,color:C.textLight,marginTop:8 }}>{t.desc}</p>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{fontSize:13,color:C.accent,letterSpacing:3,textTransform:"uppercase",marginBottom:8,fontWeight:600}}>{t.subtitle}</div>
+          <h1 style={{fontSize:22,fontWeight:700,color:C.primary,margin:0,lineHeight:1.4}}>{t.title}</h1>
+          <p style={{fontSize:13,color:C.textLight,marginTop:8}}>{t.desc}</p>
         </div>
 
         {/* 입력 */}
-        <div style={{ background:C.card,borderRadius:12,padding:"24px 20px",border:`1px solid ${C.border}`,marginBottom:20 }}>
-          <label style={{ fontSize:13,fontWeight:600,color:C.primary,display:"block",marginBottom:8 }}>{t.widthLabel}</label>
-          <div style={{ position:"relative",marginBottom:16 }}><input type="number" value={width} onChange={(e)=>setWidth(e.target.value)} onKeyDown={handleKey} placeholder={t.widthPh} min={1} step={0.5} style={inputStyle} onFocus={(e)=>(e.target.style.borderColor=C.accent)} onBlur={(e)=>(e.target.style.borderColor=C.border)} /><span style={unitStyle}>cm</span></div>
-          <label style={{ fontSize:13,fontWeight:600,color:C.primary,display:"block",marginBottom:8 }}>{t.heightLabel}</label>
-          <div style={{ position:"relative",marginBottom:20 }}><input type="number" value={height} onChange={(e)=>setHeight(e.target.value)} onKeyDown={handleKey} placeholder={t.heightPh} min={120} max={260} step={0.5} style={inputStyle} onFocus={(e)=>(e.target.style.borderColor=C.accent)} onBlur={(e)=>(e.target.style.borderColor=C.border)} /><span style={unitStyle}>cm</span></div>
-          <div style={{ display:"flex",gap:10 }}>
-            <button onClick={handleCalc} disabled={!canCalc} style={{ flex:1,padding:"13px 0",background:canCalc?C.primary:"#ccc",color:"#fff",border:"none",borderRadius:8,fontSize:15,fontWeight:600,cursor:canCalc?"pointer":"not-allowed" }} onMouseEnter={(e)=>{if(canCalc)e.target.style.opacity="0.85";}} onMouseLeave={(e)=>(e.target.style.opacity="1")}>{t.calcBtn}</button>
-            <button onClick={handleReset} style={{ padding:"13px 20px",background:"none",color:C.textLight,border:`1px solid ${C.border}`,borderRadius:8,fontSize:14,fontWeight:500,cursor:"pointer" }}>{t.resetBtn}</button>
+        <div style={{background:C.card,borderRadius:12,padding:"24px 20px",border:`1px solid ${C.border}`,marginBottom:20}}>
+          <label style={{fontSize:13,fontWeight:600,color:C.primary,display:"block",marginBottom:8}}>{t.widthLabel}</label>
+          <div style={{position:"relative",marginBottom:16}}><input type="number" value={width} onChange={e=>setWidth(e.target.value)} onKeyDown={handleKey} placeholder={t.widthPh} min={1} step={0.5} style={inputStyle} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/><span style={unitStyle}>cm</span></div>
+          <label style={{fontSize:13,fontWeight:600,color:C.primary,display:"block",marginBottom:8}}>{t.heightLabel}</label>
+          <div style={{position:"relative",marginBottom:20}}><input type="number" value={height} onChange={e=>setHeight(e.target.value)} onKeyDown={handleKey} placeholder={t.heightPh} min={120} max={260} step={0.5} style={inputStyle} onFocus={e=>(e.target.style.borderColor=C.accent)} onBlur={e=>(e.target.style.borderColor=C.border)}/><span style={unitStyle}>cm</span></div>
+          <div style={{display:"flex",gap:10}}>
+            <button onClick={handleCalc} disabled={!canCalc} style={{flex:1,padding:"13px 0",background:canCalc?C.primary:"#ccc",color:"#fff",border:"none",borderRadius:8,fontSize:15,fontWeight:600,cursor:canCalc?"pointer":"not-allowed"}} onMouseEnter={e=>{if(canCalc)e.target.style.opacity="0.85";}} onMouseLeave={e=>(e.target.style.opacity="1")}>{t.calcBtn}</button>
+            <button onClick={handleReset} style={{padding:"13px 20px",background:"none",color:C.textLight,border:`1px solid ${C.border}`,borderRadius:8,fontSize:14,fontWeight:500,cursor:"pointer"}}>{t.resetBtn}</button>
           </div>
         </div>
 
         {/* 에러 */}
-        {result?.error && typeof result.error==="string" && (<div style={{ background:C.errorBg,border:`1px solid ${C.errorBorder}`,borderRadius:10,padding:"16px 20px",marginBottom:20,fontSize:14,color:C.error }}>{result.error}</div>)}
+        {result?.error&&typeof result.error==="string"&&(<div style={{background:C.errorBg,border:`1px solid ${C.errorBorder}`,borderRadius:10,padding:"16px 20px",marginBottom:20,fontSize:14,color:C.error}}>{result.error}</div>)}
 
         {/* 결과 */}
-        {result && !result.error && (()=>{
-          const danNames = getDanNames(result.kansu, t);
-          const colors = SECTION_COLORS_MAP[result.kansu] || SECTION_COLORS_MAP[6];
-          const textColors = SECTION_TEXT_MAP[result.kansu] || SECTION_TEXT_MAP[6];
+        {result&&!result.error&&(()=>{
+          const danNames=getDanNames(result.kansu,t);
           return (
-          <div style={{ background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"hidden",marginBottom:20 }}>
+          <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"hidden",marginBottom:20}}>
             {/* 결과 헤더 */}
-            <div style={{ padding:"18px 20px",borderBottom:`1px solid ${C.border}` }}>
-              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10 }}>
-                <div style={{ display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap" }}>
-                  <span style={{ fontSize:14,color:C.textLight }}>{t.width}</span><span style={{ fontSize:22,fontWeight:700,color:C.primary }}>{result.width}cm</span>
-                  <span style={{ fontSize:14,color:C.textLight,margin:"0 4px" }}>×</span>
-                  <span style={{ fontSize:14,color:C.textLight }}>{t.height}</span><span style={{ fontSize:22,fontWeight:700,color:C.primary }}>{result.height}cm</span>
+            <div style={{padding:"18px 20px",borderBottom:`1px solid ${C.border}`}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}}>
+                  <span style={{fontSize:14,color:C.textLight}}>{t.width}</span><span style={{fontSize:22,fontWeight:700,color:C.primary}}>{result.width}cm</span>
+                  <span style={{fontSize:14,color:C.textLight,margin:"0 4px"}}>×</span>
+                  <span style={{fontSize:14,color:C.textLight}}>{t.height}</span><span style={{fontSize:22,fontWeight:700,color:C.primary}}>{result.height}cm</span>
                 </div>
-                <span style={{ fontSize:13,color:C.accent,fontWeight:600,background:C.accentLight,padding:"3px 10px",borderRadius:20 }}>{result.kansu}{t.kan}</span>
+                <span style={{fontSize:13,color:C.accent,fontWeight:600,background:C.accentLight,padding:"3px 10px",borderRadius:20}}>{result.kansu}{t.kan}</span>
               </div>
-              <div style={{ display:"flex",gap:16,fontSize:13,color:C.textLight }}>
-                <span>{t.danSum}: <b style={{ color:C.text }}>{roundHalf(totalSum)}cm</b></span>
-                {!result.isExact && <span style={{ color:C.warn }}>{t.interpolated}</span>}
+              <div style={{display:"flex",gap:16,fontSize:13,color:C.textLight}}>
+                <span>{t.danSum}: <b style={{color:C.text}}>{roundHalf(totalSum)}cm</b></span>
+                {!result.isExact&&<span style={{color:C.warn}}>{t.interpolated}</span>}
               </div>
             </div>
 
             {/* 실패 개수 */}
-            <div style={{ margin:"20px 20px 0",padding:"14px 16px",background:"#fef9ee",border:"1px solid #f0d68a",borderRadius:8 }}>
-              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center" }}>
-                <div><div style={{ fontSize:12,color:C.textLight,marginBottom:4 }}>{t.failLabel}</div><div style={{ fontSize:20,fontWeight:700,color:C.primary }}>{result.failureCount}{t.failUnit}</div></div>
-                <div style={{ textAlign:"right",fontSize:12,color:C.textLight,lineHeight:1.6 }}>{t.width} {result.width}cm → {result.width<=130?`${t.failRule1} (2${t.failUnit})`:`${t.failRule2} (3${t.failUnit})`}</div>
+            <div style={{margin:"20px 20px 0",padding:"14px 16px",background:"#fef9ee",border:"1px solid #f0d68a",borderRadius:8}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div><div style={{fontSize:12,color:C.textLight,marginBottom:4}}>{t.failLabel}</div><div style={{fontSize:20,fontWeight:700,color:C.primary}}>{result.failureCount}{t.failUnit}</div></div>
+                <div style={{textAlign:"right",fontSize:12,color:C.textLight,lineHeight:1.6}}>{t.width} {result.width}cm → {result.width<=130?`${t.failRule1} (2${t.failUnit})`:`${t.failRule2} (3${t.failUnit})`}</div>
               </div>
             </div>
 
-            {/* 단면도: 상단→하단 면적형, 다채로운 색상 */}
-            <div style={{ padding:"20px" }}>
-              <div style={{ fontSize:13,fontWeight:600,color:C.primary,marginBottom:10 }}>{t.sectionTitle}</div>
-              <div style={{ border:`2px solid ${C.border}`,borderRadius:12,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
-                {danNames.slice().reverse().map((name,ri)=>{
-                  const i = result.values.length - 1 - ri;
-                  const val = result.values[i];
-                  const hPct = (val / totalSum) * 100;
-                  const bgColor = colors[ri % colors.length];
-                  const txtColor = textColors[ri % textColors.length];
-                  return (
-                    <div key={i} style={{
-                      height: `${Math.max(hPct * 3.8, 40)}px`,
-                      background: bgColor,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "0 18px",
-                      borderBottom: ri < result.values.length - 1 ? "2px solid rgba(255,255,255,0.7)" : "none",
-                    }}>
-                      <span style={{ fontSize:14,fontWeight:700,color:txtColor }}>{name}</span>
-                      <span style={{ fontSize:18,fontWeight:800,color:txtColor }}>{val}<span style={{ fontSize:12,fontWeight:500 }}>cm</span></span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display:"flex",justifyContent:"flex-end",marginTop:8,fontSize:12,color:C.textLight }}>
-                {t.danSum}: {roundHalf(totalSum)}cm
-              </div>
+            {/* 로만쉐이드 단면도 */}
+            <div style={{padding:"20px 20px 24px"}}>
+              <div style={{fontSize:13,fontWeight:600,color:C.primary,marginBottom:14}}>{t.sectionTitle}</div>
+              <RomanShadeDiagram danNames={danNames} values={result.values} totalSum={totalSum} t={t} />
             </div>
           </div>
           );
         })()}
 
         {/* 전체 테이블 */}
-        <div style={{ background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"hidden" }}>
-          <button onClick={()=>setShowTable(!showTable)} style={{ width:"100%",padding:"14px 20px",background:"none",border:"none",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:14,fontWeight:600,color:C.primary }}>
-            <span>{t.tableBtn}</span><span style={{ transform:showTable?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s",fontSize:12 }}>▼</span>
+        <div style={{background:C.card,borderRadius:12,border:`1px solid ${C.border}`,overflow:"hidden"}}>
+          <button onClick={()=>setShowTable(!showTable)} style={{width:"100%",padding:"14px 20px",background:"none",border:"none",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:14,fontWeight:600,color:C.primary}}>
+            <span>{t.tableBtn}</span><span style={{transform:showTable?"rotate(180deg)":"rotate(0)",transition:"transform 0.2s",fontSize:12}}>▼</span>
           </button>
-          {showTable && (<div style={{ borderTop:`1px solid ${C.border}`,overflowX:"auto" }}>
-            <table style={{ width:"100%",borderCollapse:"collapse",fontSize:12,whiteSpace:"nowrap" }}>
-              <thead><tr style={{ background:C.bg }}><th style={thStyle}>{t.thHeight}</th><th style={thStyle}>{t.thKan}</th><th style={thStyle}>1{t.dan}</th><th style={thStyle}>2{t.dan}</th><th style={thStyle}>3{t.dan}</th><th style={thStyle}>4{t.dan}</th><th style={thStyle}>5{t.dan}</th><th style={thStyle}>6{t.dan}</th></tr></thead>
-              <tbody>{fullTable.map((row)=>(<tr key={row.size} style={{ background:row.isExact?C.accentLight:"transparent",borderBottom:`1px solid ${C.border}` }}>
-                <td style={{ ...tdStyle,fontWeight:600 }}>{row.size}</td><td style={tdStyle}>{row.kansu}</td>
-                {[0,1,2,3,4,5].map((di)=>(<td key={di} style={{ ...tdStyle,color:di<row.values.length?C.text:"#ddd" }}>{di<row.values.length?row.values[di]:"—"}</td>))}
+          {showTable&&(<div style={{borderTop:`1px solid ${C.border}`,overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12,whiteSpace:"nowrap"}}>
+              <thead><tr style={{background:C.bg}}><th style={thStyle}>{t.thHeight}</th><th style={thStyle}>{t.thKan}</th><th style={thStyle}>1{t.dan}</th><th style={thStyle}>2{t.dan}</th><th style={thStyle}>3{t.dan}</th><th style={thStyle}>4{t.dan}</th><th style={thStyle}>5{t.dan}</th><th style={thStyle}>6{t.dan}</th></tr></thead>
+              <tbody>{fullTable.map(row=>(<tr key={row.size} style={{background:row.isExact?C.accentLight:"transparent",borderBottom:`1px solid ${C.border}`}}>
+                <td style={{...tdStyle,fontWeight:600}}>{row.size}</td><td style={tdStyle}>{row.kansu}</td>
+                {[0,1,2,3,4,5].map(di=>(<td key={di} style={{...tdStyle,color:di<row.values.length?C.text:"#ddd"}}>{di<row.values.length?row.values[di]:"—"}</td>))}
               </tr>))}</tbody>
             </table>
           </div>)}
         </div>
-        {showTable && (<div style={{ marginTop:10,display:"flex",gap:16,justifyContent:"center",fontSize:11,color:C.textLight }}>
-          <span style={{ display:"flex",alignItems:"center",gap:4 }}><span style={{ width:12,height:12,borderRadius:3,background:C.accentLight,display:"inline-block",border:`1px solid ${C.border}` }}/>{t.baseData}</span>
-          <span style={{ display:"flex",alignItems:"center",gap:4 }}><span style={{ width:12,height:12,borderRadius:3,background:"#fff",display:"inline-block",border:`1px solid ${C.border}` }}/>{t.interpData}</span>
+        {showTable&&(<div style={{marginTop:10,display:"flex",gap:16,justifyContent:"center",fontSize:11,color:C.textLight}}>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:3,background:C.accentLight,display:"inline-block",border:`1px solid ${C.border}`}}/>{t.baseData}</span>
+          <span style={{display:"flex",alignItems:"center",gap:4}}><span style={{width:12,height:12,borderRadius:3,background:"#fff",display:"inline-block",border:`1px solid ${C.border}`}}/>{t.interpData}</span>
         </div>)}
 
-        {/* 설명 */}
-        <div style={{ marginTop:20,padding:"16px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,fontSize:12,color:C.textLight,lineHeight:1.7 }}>
-          <div style={{ fontWeight:600,color:C.primary,marginBottom:6,fontSize:13 }}>{t.methodTitle}</div>
-          <div>• {t.method1} <b style={{ color:C.text }}>{t.method1b}</b>{t.method1c}<br/>• {t.method2} <b style={{ color:C.text }}>{t.method2b}</b>{t.method2c}<br/>• {t.method3}<br/>• {t.method4}</div>
+        <div style={{marginTop:20,padding:"16px 20px",background:C.card,borderRadius:12,border:`1px solid ${C.border}`,fontSize:12,color:C.textLight,lineHeight:1.7}}>
+          <div style={{fontWeight:600,color:C.primary,marginBottom:6,fontSize:13}}>{t.methodTitle}</div>
+          <div>• {t.method1} <b style={{color:C.text}}>{t.method1b}</b>{t.method1c}<br/>• {t.method2} <b style={{color:C.text}}>{t.method2b}</b>{t.method2c}<br/>• {t.method3}<br/>• {t.method4}</div>
         </div>
-        <div style={{ marginTop:16,textAlign:"center",fontSize:11,color:C.textLight }}>{t.footer}</div>
+        <div style={{marginTop:16,textAlign:"center",fontSize:11,color:C.textLight}}>{t.footer}</div>
       </div>
     </div>
   );
