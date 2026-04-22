@@ -27,14 +27,14 @@ const LANG = {
     widthPh:"예: 150", heightPh:"예: 137", calcBtn:"계산하기", resetBtn:"초기화",
     errWidth:"가로 사이즈를 올바르게 입력해주세요.", errHeight:"세로 사이즈는 120~260cm 범위로 입력해주세요.", errRange:"계산할 수 없는 범위입니다.",
     width:"가로", height:"세로", kan:"칸", danSum:"단 합계", interpolated:"보간 계산값",
-    failLabel:"실패 개수 (비고)", failUnit:"개", failRule1:"~130cm 기준", failRule2:"131~200cm 기준",
+    failLabel:"실패 개수 (비고)", failUnit:"개", failRule1:"~130cm 기준", failRule2:"131~199cm 기준",
     sectionTitle:"단면도",
     tableBtn:"전체 사이즈 테이블 (120~260cm, 1cm 단위)", baseData:"기준 데이터", interpData:"보간 계산값",
     methodTitle:"계산 방식",
     method1:"5cm 단위 기준 데이터 사이의 값은", method1b:"선형 보간법", method1c:"으로 산출",
     method2:"모든 결과는", method2b:"0.5cm 단위", method2c:"로 반올림",
     method3:"~150cm → 4칸 / 151~220cm → 5칸 / 221cm~ → 6칸",
-    method4:"실패 개수: 가로 ~130cm → 2개 / 가로 131~200cm → 3개",
+    method4:"실패 개수: 가로 ~130cm → 2개 / 가로 131~199cm → 3개",
     footer:"마리하우스 로만쉐이드 제작 기준표",
     danBottom:"하단", danTop:"상단", dan:"단", thHeight:"세로", thKan:"칸",
   },
@@ -45,14 +45,14 @@ const LANG = {
     widthPh:"例: 150", heightPh:"例: 137", calcBtn:"计算", resetBtn:"重置",
     errWidth:"请正确输入宽度。", errHeight:"高度请输入120~260cm范围。", errRange:"超出可计算范围。",
     width:"宽", height:"高", kan:"格", danSum:"段合计", interpolated:"插值计算",
-    failLabel:"穿绳数量 (备注)", failUnit:"个", failRule1:"~130cm 标准", failRule2:"131~200cm 标准",
+    failLabel:"穿绳数量 (备注)", failUnit:"个", failRule1:"~130cm 标准", failRule2:"131~199cm 标准",
     sectionTitle:"截面图",
     tableBtn:"全部尺寸表 (120~260cm, 1cm单位)", baseData:"基准数据", interpData:"插值数据",
     methodTitle:"计算方式",
     method1:"5cm单位基准数据之间的值通过", method1b:"线性插值法", method1c:"计算",
     method2:"所有结果以", method2b:"0.5cm单位", method2c:"四舍五入",
     method3:"~150cm → 4格 / 151~220cm → 5格 / 221cm~ → 6格",
-    method4:"穿绳数量: 宽 ~130cm → 2个 / 宽 131~200cm → 3个",
+    method4:"穿绳数量: 宽 ~130cm → 2个 / 宽 131~199cm → 3个",
     footer:"MARYHOUSE 罗马帘制作标准表",
     danBottom:"底", danTop:"顶", dan:"段", thHeight:"高度", thKan:"格",
   }
@@ -60,7 +60,7 @@ const LANG = {
 
 function roundHalf(n){return Math.round(n*2)/2;}
 function getKansu(h){if(h<120)return null;if(h<=150)return 4;if(h<=220)return 5;if(h>=221)return 6;return null;}
-function getFailureCount(w){if(w<=130)return 2;if(w<=200)return 3;return 3;}
+function getFailureCount(w){if(w<=130)return 2;if(w<=199)return 3;return 3;}
 
 // 최대잔여법: 반올림 후 합계가 목표와 다르면 오차가 큰 값부터 0.5씩 보정
 function adjustToTarget(rawValues, targetSum) {
